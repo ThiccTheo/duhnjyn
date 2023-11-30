@@ -12,9 +12,9 @@ impl Plugin for TilePlugin {
 pub struct Tile;
 
 fn spawn_tiles(mut cmds: Commands) {
-    for y in (-32..0).chain(1..=32) {
-        for x in (-32..0).chain(1..=32) {
-            if (y == -32 || y == 32) || (x == -32 || x == 32) {
+    for y in (-5..0).chain(1..=5) {
+        for x in (-5..0).chain(1..=5) {
+            if (y == -5 || y == 5) || (x == -5 || x == 5) {
                 let pos = Vec2::new(x as f32 * 16., y as f32 * 16.);
                 cmds.spawn((
                     Tile,
