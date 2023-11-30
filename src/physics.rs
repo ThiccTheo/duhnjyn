@@ -17,7 +17,7 @@ impl Plugin for PhysicsPlugin {
 pub struct TerminalVelocity(pub Vec2);
 
 #[derive(Component)]
-pub struct Acceleration(pub Vec2);
+pub struct Gravity(pub f32);
 
 fn is_colliding_horizontally(normal: Vec2, threshold: f32) -> bool {
     let dot_prod = normal.normalize().dot(Vec2::X);
@@ -35,15 +35,16 @@ pub fn apply_forces(
         &mut Velocity,
         &TerminalVelocity,
         &Friction,
+        &Gravity,
     )>,
     time: Res<Time<Fixed>>,
 ) {
     let dt = time.timestep().as_secs_f32();
 
-    for (mut kcc, mut vel, terminal_vel, friction) in physics_qry.iter_mut() {
-        let mut pos = Vec2::ZERO;
-        let mut sign_change = false;
+    for (mut kcc, mut vel, terminal_vel, friction, gravity) in physics_qry.iter_mut() {
+        vel.linvel.y -= gravity.0;
 
+        let mut sign_change = false;
         if vel.linvel.x > 0. {
             vel.linvel.x -= friction.coefficient;
             sign_change = vel.linvel.x < 0.;
@@ -57,6 +58,7 @@ pub fn apply_forces(
         vel.linvel.x = vel.linvel.x.clamp(-terminal_vel.0.x, terminal_vel.0.x);
         vel.linvel.y = vel.linvel.y.clamp(-terminal_vel.0.y, terminal_vel.0.y);
 
+        let mut pos = Vec2::ZERO;
         pos += vel.linvel * dt;
         kcc.translation = Some(pos);
     }

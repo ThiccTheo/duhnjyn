@@ -1,7 +1,7 @@
 use {
     super::{
         game_state::GameState,
-        physics::{self, TerminalVelocity},
+        physics::{self, TerminalVelocity, Gravity},
     },
     bevy::prelude::*,
     bevy_rapier2d::prelude::*,
@@ -53,6 +53,7 @@ fn spawn_player(mut cmds: Commands, assets: Res<AssetServer>) {
         Friction::coefficient(1.),
         Velocity::zero(),
         TerminalVelocity(Vec2::splat(100.)),
+        Gravity(2.),
     ));
 }
 
@@ -70,5 +71,4 @@ pub fn player_movement(
     if player_actions.just_pressed(PlayerAction::Jump) && player_vel.linvel.y == 0. {
         player_vel.linvel.y = 100.;
     }
-    player_vel.linvel.y -= 2.;
 }
