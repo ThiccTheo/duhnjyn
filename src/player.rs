@@ -1,7 +1,7 @@
 use {
     super::{
         game_state::GameState,
-        physics::{self, Acceleration, PhysicsBundle, TerminalVelocity},
+        physics::{self, TerminalVelocity},
     },
     bevy::prelude::*,
     bevy_rapier2d::prelude::*,
@@ -44,40 +44,31 @@ fn spawn_player(mut cmds: Commands, assets: Res<AssetServer>) {
             input_map: InputMap::new([
                 (KeyCode::A, PlayerAction::MoveLeft),
                 (KeyCode::D, PlayerAction::MoveRight),
+                (KeyCode::Space, PlayerAction::Jump),
             ]),
             ..default()
         },
         KinematicCharacterController::default(),
         Collider::cuboid(6., 21. / 2.),
-        PhysicsBundle {
-            friction: Friction::coefficient(10.),
-            velocity: Velocity::zero(),
-            terminal_velocity: TerminalVelocity(Vec2::splat(100.)),
-            acceleration: Acceleration(Vec2::splat(0.)),
-        },
+        Friction::coefficient(1.),
+        Velocity::zero(),
+        TerminalVelocity(Vec2::splat(100.)),
     ));
 }
 
 pub fn player_movement(
-    mut player_qry: Query<
-        (&ActionState<PlayerAction>, &mut Velocity, &mut Acceleration),
-        With<Player>,
-    >,
+    mut player_qry: Query<(&ActionState<PlayerAction>, &mut Velocity), With<Player>>,
 ) {
-    let (player_actions, mut player_vel, mut player_acc) = player_qry.single_mut();
+    let (player_actions, mut player_vel) = player_qry.single_mut();
 
     if player_actions.pressed(PlayerAction::MoveLeft) {
-        player_vel.linvel.x -= 10.;
-        player_acc.0.x -= 1.;
-    } else if player_actions.pressed(PlayerAction::MoveRight) {
-        player_vel.linvel.x += 10.;
-        player_acc.0.x += 1.;
-    } else if player_acc.0.x.is_sign_positive() {
-        player_acc.0.x = f32::max(player_acc.0.x - 1., 0.);
-    } else if player_acc.0.x.is_sign_negative() {
-        player_acc.0.x = f32::min(player_acc.0.x + 1., 0.);
+        player_vel.linvel.x -= 2.12;
     }
-    if player_vel.linvel.x == 0. {
-        player_acc.0.x = 0.;
+    if player_actions.pressed(PlayerAction::MoveRight) {
+        player_vel.linvel.x += 2.12;
     }
+    if player_actions.just_pressed(PlayerAction::Jump) && player_vel.linvel.y == 0. {
+        player_vel.linvel.y = 100.;
+    }
+    player_vel.linvel.y -= 2.;
 }
