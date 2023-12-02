@@ -17,7 +17,10 @@ impl Plugin for PhysicsPlugin {
 pub struct TerminalVelocity(pub Vec2);
 
 #[derive(Component)]
-pub struct Gravity(pub f32);
+pub struct Acceleration(pub Vec2);
+
+#[derive(Component)]
+pub struct NetDirection(pub Vec2);
 
 fn is_colliding_horizontally(normal: Vec2, threshold: f32) -> bool {
     let dot_prod = normal.normalize().dot(Vec2::X);
@@ -35,25 +38,21 @@ pub fn apply_forces(
         &mut Velocity,
         &TerminalVelocity,
         &Friction,
-        &Gravity,
+        &Acceleration,
+        &NetDirection,
     )>,
     time: Res<Time<Fixed>>,
 ) {
     let dt = time.timestep().as_secs_f32();
 
-    for (mut kcc, mut vel, terminal_vel, friction, gravity) in physics_qry.iter_mut() {
-        vel.linvel.y -= gravity.0;
+    for (mut kcc, mut vel, terminal_vel, friction, acc, net_dir) in physics_qry.iter_mut() {
+        vel.linvel += acc.0 * net_dir.0 * dt;
 
-        let mut sign_change = false;
-        if vel.linvel.x > 0. {
-            vel.linvel.x -= friction.coefficient;
-            sign_change = vel.linvel.x < 0.;
-        } else if vel.linvel.x < 0. {
-            vel.linvel.x += friction.coefficient;
-            sign_change = vel.linvel.x > 0.;
-        }
-        if sign_change {
-            vel.linvel.x = 0.;
+        let dir = vel.linvel.normalize_or_zero();
+        if dir.x > 0. {
+            vel.linvel.x = f32::max(0., vel.linvel.x - friction.coefficient);
+        } else if dir.x < 0. {
+            vel.linvel.x = f32::min(vel.linvel.x + friction.coefficient, 0.);
         }
         vel.linvel.x = vel.linvel.x.clamp(-terminal_vel.0.x, terminal_vel.0.x);
         vel.linvel.y = vel.linvel.y.clamp(-terminal_vel.0.y, terminal_vel.0.y);

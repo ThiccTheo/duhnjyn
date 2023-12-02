@@ -1,7 +1,7 @@
 use {
     super::{
         game_state::GameState,
-        physics::{self, TerminalVelocity, Gravity},
+        physics::{self, Acceleration, NetDirection, TerminalVelocity},
     },
     bevy::prelude::*,
     bevy_rapier2d::prelude::*,
@@ -23,7 +23,7 @@ impl Plugin for PlayerPlugin {
     }
 }
 
-#[derive(Actionlike, TypePath, Clone)]
+#[derive(Actionlike, Clone, Eq, PartialEq, Hash, Reflect)]
 pub enum PlayerAction {
     MoveLeft,
     MoveRight,
@@ -50,25 +50,34 @@ fn spawn_player(mut cmds: Commands, assets: Res<AssetServer>) {
         },
         KinematicCharacterController::default(),
         Collider::cuboid(6., 21. / 2.),
-        Friction::coefficient(1.),
+        Friction::coefficient(2.),
         Velocity::zero(),
-        TerminalVelocity(Vec2::splat(100.)),
-        Gravity(2.),
+        TerminalVelocity(Vec2::new(100., 200.)),
+        Acceleration(Vec2::new(300., 500.)),
+        NetDirection(Vec2::new(0., -1.)),
     ));
 }
 
 pub fn player_movement(
-    mut player_qry: Query<(&ActionState<PlayerAction>, &mut Velocity), With<Player>>,
+    mut player_qry: Query<
+        (&ActionState<PlayerAction>, &mut Velocity, &mut NetDirection),
+        With<Player>,
+    >,
 ) {
-    let (player_actions, mut player_vel) = player_qry.single_mut();
+    let (player_actions, mut player_vel, mut player_net_dir) = player_qry.single_mut();
 
     if player_actions.pressed(PlayerAction::MoveLeft) {
-        player_vel.linvel.x -= 2.12;
+        player_net_dir.0.x = -1.;
     }
     if player_actions.pressed(PlayerAction::MoveRight) {
-        player_vel.linvel.x += 2.12;
+        player_net_dir.0.x = 1.;
+    }
+    if !player_actions.pressed(PlayerAction::MoveLeft)
+        && !player_actions.pressed(PlayerAction::MoveRight)
+    {
+        player_net_dir.0.x = 0.;
     }
     if player_actions.just_pressed(PlayerAction::Jump) && player_vel.linvel.y == 0. {
-        player_vel.linvel.y = 100.;
+        player_vel.linvel.y = 200.;
     }
 }
