@@ -5,7 +5,10 @@ mod player;
 mod tile;
 
 use {
-    bevy::prelude::*,
+    bevy::{
+        prelude::*,
+        window::{PresentMode, WindowMode, WindowResolution},
+    },
     bevy_inspector_egui::quick::WorldInspectorPlugin,
     bevy_rapier2d::prelude::*,
     game_state::GameState,
@@ -20,7 +23,18 @@ fn main() {
     App::new()
         .add_state::<GameState>()
         .add_plugins((
-            DefaultPlugins.set(ImagePlugin::default_nearest()),
+            DefaultPlugins
+                .set(ImagePlugin::default_nearest())
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        present_mode: PresentMode::AutoNoVsync,
+                        mode: WindowMode::Windowed,
+                        resolution: WindowResolution::new(800., 600.),
+                        title: String::from("Duhnjyn"),
+                        ..default()
+                    }),
+                    ..default()
+                }),
             WorldInspectorPlugin::new(),
             RapierPhysicsPlugin::<NoUserData>::default(),
             RapierDebugRenderPlugin::default(),

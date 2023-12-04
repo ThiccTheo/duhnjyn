@@ -1662,6 +1662,7 @@ dependencies = [
  "bevy-inspector-egui",
  "bevy_rapier2d",
  "leafwing-input-manager",
+ "maplit",
 ]
 
 [[package]]
@@ -1969,9 +1970,9 @@ dependencies = [
 
 [[package]]
 name = "gilrs"
-version = "0.10.3"
+version = "0.10.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e9eec02069fcbd7abe00a28adf216547774889129a777cb5e53fdfb75d59f09"
+checksum = "d8b2e57a9cb946b5d04ae8638c5f554abb5a9f82c4c950fd5b1fee6d119592fb"
 dependencies = [
  "fnv",
  "gilrs-core",
@@ -2545,6 +2546,12 @@ checksum = "62bb907fe88d54d8d9ce32a3cceab4218ed2f6b7d35617cafe9adf84e43919cb"
 dependencies = [
  "libc",
 ]
+
+[[package]]
+name = "maplit"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3e2e65a1a2e43cfcb47a895c4c8b10d1f4a61097f9f254f183aee60cad9c651d"
 
 [[package]]
 name = "matchers"

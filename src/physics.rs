@@ -6,7 +6,7 @@ impl Plugin for PhysicsPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             FixedUpdate,
-            (zero_velocity_on_collision, apply_forces)
+            (process_collisions, apply_forces)
                 .chain()
                 .distributive_run_if(in_state(GameState::Playing)),
         );
@@ -63,7 +63,7 @@ pub fn apply_forces(
     }
 }
 
-pub fn zero_velocity_on_collision(
+pub fn process_collisions(
     mut physics_qry: Query<(&KinematicCharacterControllerOutput, &mut Velocity), With<Collider>>,
 ) {
     for (kcc_out, mut vel) in physics_qry.iter_mut() {
@@ -73,14 +73,14 @@ pub fn zero_velocity_on_collision(
             if collision
                 .toi
                 .details
-                .is_some_and(|details| is_colliding_horizontally(details.normal2, threshold))
+                .is_some_and(|deets| is_colliding_horizontally(deets.normal2, threshold))
             {
                 vel.linvel.x = 0.;
             }
             if collision
                 .toi
                 .details
-                .is_some_and(|details| is_colliding_vertically(details.normal2, threshold))
+                .is_some_and(|deets| is_colliding_vertically(deets.normal2, threshold))
             {
                 vel.linvel.y = 0.;
             }
