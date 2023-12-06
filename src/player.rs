@@ -2,6 +2,7 @@ use {
     super::{
         game_state::GameState,
         physics::{self, Acceleration, Grounded, NetDirection, TerminalVelocity},
+        sprite_flip::Flippable,
     },
     bevy::prelude::*,
     bevy_rapier2d::prelude::*,
@@ -62,6 +63,7 @@ fn spawn_player(mut cmds: Commands, assets: Res<AssetServer>) {
         Acceleration(Vec2::new(300., 500.)),
         NetDirection(Vec2::new(0., -1.)),
         Grounded::default(),
+        Flippable::default(),
     ));
 }
 
@@ -69,7 +71,6 @@ fn discrete_player_input(
     mut player_qry: Query<(&mut Player, &ActionState<PlayerAction>, &Grounded)>,
 ) {
     let (mut player, player_actions, player_grounded) = player_qry.single_mut();
-    println!("{}", player_grounded.0);
 
     if player_actions.just_pressed(PlayerAction::Jump) && player_grounded.0 {
         player.can_jump = true;
@@ -83,21 +84,30 @@ pub fn player_movement(
         &mut Velocity,
         &mut NetDirection,
         &mut Grounded,
+        &mut Flippable,
     )>,
 ) {
-    let (mut player, player_actions, mut player_vel, mut player_net_dir, mut player_grounded) =
-        player_qry.single_mut();
+    let (
+        mut player,
+        player_actions,
+        mut player_vel,
+        mut player_net_dir,
+        mut player_grounded,
+        mut player_flippable,
+    ) = player_qry.single_mut();
 
-    if player_actions.pressed(PlayerAction::MoveLeft) {
-        player_net_dir.0.x = -1.;
-    }
-    if player_actions.pressed(PlayerAction::MoveRight) {
-        player_net_dir.0.x = 1.;
-    }
     if player_actions.released(PlayerAction::MoveLeft)
         && player_actions.released(PlayerAction::MoveRight)
     {
         player_net_dir.0.x = 0.;
+    }
+    if player_actions.pressed(PlayerAction::MoveLeft) {
+        player_net_dir.0.x = -1.;
+        player_flippable.flip_x = true;
+    }
+    if player_actions.pressed(PlayerAction::MoveRight) {
+        player_net_dir.0.x = 1.;
+        player_flippable.flip_x = false;
     }
     if player.can_jump {
         player.can_jump = false;

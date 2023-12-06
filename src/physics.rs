@@ -93,7 +93,7 @@ pub fn process_collisions(
                 .is_some_and(|deets| is_colliding_vertically(deets.normal2, threshold))
             {
                 if let Some(grounded) = grounded.as_mut() {
-                    grounded.0 = grounded.0 || vel.linvel.y < 0.;
+                    grounded.0 = grounded.0 || vel.linvel.y < 0.
                 }
                 vel.linvel.y = 0.;
             }

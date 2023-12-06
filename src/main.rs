@@ -2,6 +2,7 @@ mod game_state;
 mod main_camera;
 mod physics;
 mod player;
+mod sprite_flip;
 mod tile;
 
 use {
@@ -16,6 +17,7 @@ use {
     main_camera::MainCameraPlugin,
     physics::PhysicsPlugin,
     player::{PlayerAction, PlayerPlugin},
+    sprite_flip::SpriteFlipPlugin,
     tile::TilePlugin,
 };
 
@@ -43,6 +45,7 @@ fn main() {
             PlayerPlugin,
             TilePlugin,
             PhysicsPlugin,
+            SpriteFlipPlugin,
         ))
         .run();
 }
