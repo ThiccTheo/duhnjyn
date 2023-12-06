@@ -13,14 +13,17 @@ impl Plugin for PhysicsPlugin {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct TerminalVelocity(pub Vec2);
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct Acceleration(pub Vec2);
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct NetDirection(pub Vec2);
+
+#[derive(Component, Default)]
+pub struct Grounded(pub bool);
 
 fn is_colliding_horizontally(normal: Vec2, threshold: f32) -> bool {
     let dot_prod = normal.normalize().dot(Vec2::X);
@@ -64,9 +67,16 @@ pub fn apply_forces(
 }
 
 pub fn process_collisions(
-    mut physics_qry: Query<(&KinematicCharacterControllerOutput, &mut Velocity), With<Collider>>,
+    mut physics_qry: Query<
+        (
+            &KinematicCharacterControllerOutput,
+            &mut Velocity,
+            Option<&mut Grounded>,
+        ),
+        With<Collider>,
+    >,
 ) {
-    for (kcc_out, mut vel) in physics_qry.iter_mut() {
+    for (kcc_out, mut vel, mut grounded) in physics_qry.iter_mut() {
         for collision in kcc_out.collisions.iter() {
             let threshold = 0.8;
 
@@ -82,6 +92,9 @@ pub fn process_collisions(
                 .details
                 .is_some_and(|deets| is_colliding_vertically(deets.normal2, threshold))
             {
+                if let Some(grounded) = grounded.as_mut() {
+                    grounded.0 = grounded.0 || vel.linvel.y < 0.;
+                }
                 vel.linvel.y = 0.;
             }
         }

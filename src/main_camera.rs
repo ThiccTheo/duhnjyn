@@ -36,10 +36,15 @@ fn follow_player(
     let mut main_cam_xform = main_cam_qry.single_mut();
     let player_xform = player_qry.single();
 
-    main_cam_xform.translation = Vec2::lerp(
-        main_cam_xform.translation.truncate(),
-        player_xform.translation.truncate(),
-        0.1,
-    )
-    .extend(main_cam_xform.translation.z);
+    // main_cam_xform.translation = Vec2::lerp(
+    //     main_cam_xform.translation.truncate(),
+    //     player_xform.translation.truncate(),
+    //     0.1,
+    // )
+    // .extend(main_cam_xform.translation.z);
+
+    main_cam_xform.translation = player_xform
+        .translation
+        .truncate()
+        .extend(main_cam_xform.translation.z);
 }

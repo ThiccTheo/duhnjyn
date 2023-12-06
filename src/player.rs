@@ -1,36 +1,29 @@
 use {
     super::{
         game_state::GameState,
-        physics::{self, Acceleration, NetDirection, TerminalVelocity},
+        physics::{self, Acceleration, Grounded, NetDirection, TerminalVelocity},
     },
     bevy::prelude::*,
     bevy_rapier2d::prelude::*,
     leafwing_input_manager::prelude::*,
-    maplit::hashmap,
-    std::collections::HashMap,
 };
 
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(PlayerInput(hashmap! {
-            PlayerAction::MoveLeft => false,
-            PlayerAction::MoveRight => false,
-            PlayerAction::Jump => false,
-        }))
-        .add_systems(OnEnter(GameState::Playing), spawn_player)
-        .add_systems(
-            Update,
-            poll_player_input.run_if(in_state(GameState::Playing)),
-        )
-        .add_systems(
-            FixedUpdate,
-            player_movement
-                .after(physics::process_collisions)
-                .before(physics::apply_forces)
-                .run_if(in_state(GameState::Playing)),
-        );
+        app.add_systems(OnEnter(GameState::Playing), spawn_player)
+            .add_systems(
+                Update,
+                discrete_player_input.run_if(in_state(GameState::Playing)),
+            )
+            .add_systems(
+                FixedUpdate,
+                player_movement
+                    .after(physics::process_collisions)
+                    .before(physics::apply_forces)
+                    .run_if(in_state(GameState::Playing)),
+            );
     }
 }
 
@@ -41,15 +34,14 @@ pub enum PlayerAction {
     Jump,
 }
 
-#[derive(Component)]
-pub struct Player;
-
-#[derive(Resource)]
-pub struct PlayerInput(HashMap<PlayerAction, bool>);
+#[derive(Component, Default)]
+pub struct Player {
+    can_jump: bool,
+}
 
 fn spawn_player(mut cmds: Commands, assets: Res<AssetServer>) {
     cmds.spawn((
-        Player,
+        Player::default(),
         SpriteBundle {
             texture: assets.load("player.png"),
             ..default()
@@ -69,47 +61,47 @@ fn spawn_player(mut cmds: Commands, assets: Res<AssetServer>) {
         TerminalVelocity(Vec2::new(100., 200.)),
         Acceleration(Vec2::new(300., 500.)),
         NetDirection(Vec2::new(0., -1.)),
+        Grounded::default(),
     ));
 }
 
-fn poll_player_input(
-    player_qry: Query<&ActionState<PlayerAction>, With<Player>>,
-    mut player_in: ResMut<PlayerInput>,
+fn discrete_player_input(
+    mut player_qry: Query<(&mut Player, &ActionState<PlayerAction>, &Grounded)>,
 ) {
-    let player_actions = player_qry.single();
+    let (mut player, player_actions, player_grounded) = player_qry.single_mut();
+    println!("{}", player_grounded.0);
 
-    player_in
-        .0
-        .get_mut(&PlayerAction::MoveLeft)
-        .map(|pressed| *pressed = player_actions.pressed(PlayerAction::MoveLeft));
-
-    player_in
-        .0
-        .get_mut(&PlayerAction::MoveRight)
-        .map(|pressed| *pressed = player_actions.pressed(PlayerAction::MoveRight));
-
-    player_in
-        .0
-        .get_mut(&PlayerAction::Jump)
-        .map(|pressed| *pressed = player_actions.just_pressed(PlayerAction::Jump));
+    if player_actions.just_pressed(PlayerAction::Jump) && player_grounded.0 {
+        player.can_jump = true;
+    }
 }
 
 pub fn player_movement(
-    mut player_qry: Query<(&mut Velocity, &mut NetDirection), With<Player>>,
-    player_in: Res<PlayerInput>,
+    mut player_qry: Query<(
+        &mut Player,
+        &ActionState<PlayerAction>,
+        &mut Velocity,
+        &mut NetDirection,
+        &mut Grounded,
+    )>,
 ) {
-    let (mut player_vel, mut player_net_dir) = player_qry.single_mut();
+    let (mut player, player_actions, mut player_vel, mut player_net_dir, mut player_grounded) =
+        player_qry.single_mut();
 
-    if player_in.0[&PlayerAction::MoveLeft] {
+    if player_actions.pressed(PlayerAction::MoveLeft) {
         player_net_dir.0.x = -1.;
     }
-    if player_in.0[&PlayerAction::MoveRight] {
+    if player_actions.pressed(PlayerAction::MoveRight) {
         player_net_dir.0.x = 1.;
     }
-    if !player_in.0[&PlayerAction::MoveLeft] && !player_in.0[&PlayerAction::MoveRight] {
+    if player_actions.released(PlayerAction::MoveLeft)
+        && player_actions.released(PlayerAction::MoveRight)
+    {
         player_net_dir.0.x = 0.;
     }
-    if player_in.0[&PlayerAction::Jump] && player_vel.linvel.y == 0. {
+    if player.can_jump {
+        player.can_jump = false;
+        player_grounded.0 = false;
         player_vel.linvel.y = 200.;
     }
 }
