@@ -158,7 +158,7 @@ pub fn player_movement(
     if !player_grounded.0 {
         *player_animation_indices = AnimationIndices { first: 5, last: 5 };
     }
-    if player_vel.linvel.x == 0. && player_grounded.0 { // change to avoid equality cmp by 0.
+    if player_vel.linvel.x == 0. && player_grounded.0 { // change to avoid equality cmp by 0. 
         *player_animation_indices = AnimationIndices { first: 0, last: 0 };
     }
 }
