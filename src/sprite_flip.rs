@@ -1,4 +1,4 @@
-use {super::game_state::GameState, bevy::prelude::*};
+use bevy::prelude::*;
 
 pub struct SpriteFlipPlugin;
 
@@ -6,9 +6,7 @@ impl Plugin for SpriteFlipPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (propagate_sprite_flips, convert_flippables_to_sprite_flips)
-                .chain()
-                .distributive_run_if(in_state(GameState::Playing)),
+            (propagate_sprite_flips, convert_flippables_to_sprite_flips).chain(),
         );
     }
 }
@@ -32,7 +30,7 @@ fn propagate_sprite_flips(
 ) {
     for (parent_id, children) in parent_qry.iter() {
         for &child_id in children.iter() {
-            let Ok(mut child_transform) = children_qry.get_mut(child_id) else {
+            let Ok(mut child_xform) = children_qry.get_mut(child_id) else {
                 continue;
             };
             let Ok([parent_flippable, mut child_flippable]) =
@@ -42,11 +40,11 @@ fn propagate_sprite_flips(
             };
 
             if child_flippable.flip_x != parent_flippable.flip_x {
-                child_transform.translation.x *= -1.;
+                child_xform.translation.x *= -1.;
                 child_flippable.flip_x = parent_flippable.flip_x;
             }
             if child_flippable.flip_y != parent_flippable.flip_y {
-                child_transform.translation.y *= -1.;
+                child_xform.translation.y *= -1.;
                 child_flippable.flip_y = parent_flippable.flip_y;
             }
         }

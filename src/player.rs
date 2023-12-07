@@ -3,6 +3,7 @@ use {
         game_state::GameState,
         physics::{self, Acceleration, Grounded, NetDirection, TerminalVelocity},
         sprite_flip::Flippable,
+        animation::{AnimationIndices, AnimationTimer},
     },
     bevy::prelude::*,
     bevy_rapier2d::prelude::*,
@@ -40,11 +41,27 @@ pub struct Player {
     can_jump: bool,
 }
 
-fn spawn_player(mut cmds: Commands, assets: Res<AssetServer>) {
+fn spawn_player(
+    mut cmds: Commands,
+    asset_server: Res<AssetServer>,
+    mut tex_atlases: ResMut<Assets<TextureAtlas>>,
+) {
     cmds.spawn((
         Player::default(),
-        SpriteBundle {
-            texture: assets.load("player.png"),
+        Name::new("Player"),
+        SpriteSheetBundle {
+            sprite: TextureAtlasSprite {
+                index: 0,
+                ..default()
+            },
+            texture_atlas: tex_atlases.add(TextureAtlas::from_grid(
+                asset_server.load("player.png"),
+                Vec2::splat(32.),
+                5,
+                2,
+                None,
+                None,
+            )),
             ..default()
         },
         InputManagerBundle::<PlayerAction> {
@@ -64,7 +81,27 @@ fn spawn_player(mut cmds: Commands, assets: Res<AssetServer>) {
         NetDirection(Vec2::new(0., -1.)),
         Grounded::default(),
         Flippable::default(),
-    ));
+        AnimationIndices { first: 0, last: 0 },
+        AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
+    ))
+    .with_children(|player| {
+        player.spawn((
+            SpriteBundle {
+                transform: Transform::from_xyz(1., 5., 1.),
+                texture: asset_server.load("sclera.png"),
+                ..default()
+            },
+            Flippable::default(),
+        ));
+        player.spawn((
+            SpriteBundle {
+                transform: Transform::from_xyz(1., 5., 1.),
+                texture: asset_server.load("iris.png"),
+                ..default()
+            },
+            Flippable::default(),
+        ));
+    });
 }
 
 fn discrete_player_input(
@@ -85,6 +122,7 @@ pub fn player_movement(
         &mut NetDirection,
         &mut Grounded,
         &mut Flippable,
+        &mut AnimationIndices,
     )>,
 ) {
     let (
@@ -94,6 +132,7 @@ pub fn player_movement(
         mut player_net_dir,
         mut player_grounded,
         mut player_flippable,
+        mut player_animation_indices,
     ) = player_qry.single_mut();
 
     if player_actions.released(PlayerAction::MoveLeft)
@@ -104,14 +143,22 @@ pub fn player_movement(
     if player_actions.pressed(PlayerAction::MoveLeft) {
         player_net_dir.0.x = -1.;
         player_flippable.flip_x = true;
+        *player_animation_indices = AnimationIndices { first: 6, last: 9 };
     }
     if player_actions.pressed(PlayerAction::MoveRight) {
         player_net_dir.0.x = 1.;
         player_flippable.flip_x = false;
+        *player_animation_indices = AnimationIndices { first: 6, last: 9 };
     }
     if player.can_jump {
         player.can_jump = false;
         player_grounded.0 = false;
         player_vel.linvel.y = 200.;
+    }
+    if !player_grounded.0 {
+        *player_animation_indices = AnimationIndices { first: 5, last: 5 };
+    }
+    if player_vel.linvel.x == 0. && player_grounded.0 { // change to avoid equality cmp by 0.
+        *player_animation_indices = AnimationIndices { first: 0, last: 0 };
     }
 }

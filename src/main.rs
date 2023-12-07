@@ -1,3 +1,4 @@
+mod animation;
 mod game_state;
 mod main_camera;
 mod physics;
@@ -6,6 +7,7 @@ mod sprite_flip;
 mod tile;
 
 use {
+    animation::AnimationPlugin,
     bevy::{
         prelude::*,
         window::{PresentMode, WindowMode, WindowResolution},
@@ -46,6 +48,7 @@ fn main() {
             TilePlugin,
             PhysicsPlugin,
             SpriteFlipPlugin,
+            AnimationPlugin,
         ))
         .run();
 }
