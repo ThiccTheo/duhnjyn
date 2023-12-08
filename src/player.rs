@@ -82,7 +82,7 @@ fn spawn_player(
         Velocity::zero(),
         TerminalVelocity(Vec2::new(100., 200.)),
         Acceleration(Vec2::new(300., 500.)),
-        NetDirection(Vec2::new(0., -1.)),
+        NetDirection { x: 0, y: -1 },
         Grounded::default(),
         Flippable::default(),
         AnimationIndices { first: 0, last: 0 },
@@ -120,9 +120,9 @@ fn update_animation_state(
 
     if !player_grounded.0 && *player_animation_indices != jumping {
         *player_animation_indices = jumping;
-    } else if player_grounded.0 && (player_net_dir.0.x < 0. || player_net_dir.0.x > 0.) && *player_animation_indices != walking {
+    } else if player_grounded.0 && (player_net_dir.x == -1 || player_net_dir.x == 1) && *player_animation_indices != walking {
         *player_animation_indices = walking;
-    } else if player_grounded.0 && player_net_dir.0.x == 0. && *player_animation_indices != idle {
+    } else if player_grounded.0 && player_net_dir.x == 0 && *player_animation_indices != idle {
         *player_animation_indices = idle;
     }
     
@@ -160,14 +160,14 @@ pub fn player_movement(
     if player_actions.released(PlayerAction::MoveLeft)
         && player_actions.released(PlayerAction::MoveRight)
     {
-        player_net_dir.0.x = 0.;
+        player_net_dir.x = 0;
     }
     if player_actions.pressed(PlayerAction::MoveLeft) {
-        player_net_dir.0.x = -1.;
+        player_net_dir.x = -1;
         player_flippable.flip_x = true;
     }
     if player_actions.pressed(PlayerAction::MoveRight) {
-        player_net_dir.0.x = 1.;
+        player_net_dir.x = 1;
         player_flippable.flip_x = false;
     }
     if player.can_jump {

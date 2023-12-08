@@ -13,16 +13,19 @@ impl Plugin for PhysicsPlugin {
     }
 }
 
-#[derive(Component, Default)]
+#[derive(Component, Default, Deref, DerefMut)]
 pub struct TerminalVelocity(pub Vec2);
 
-#[derive(Component, Default)]
+#[derive(Component, Default, Deref, DerefMut)]
 pub struct Acceleration(pub Vec2);
 
 #[derive(Component, Default)]
-pub struct NetDirection(pub Vec2);
+pub struct NetDirection {
+    pub x: i8,
+    pub y: i8,
+}
 
-#[derive(Component, Default)]
+#[derive(Component, Default, Deref, DerefMut)]
 pub struct Grounded(pub bool);
 
 fn is_colliding_horizontally(normal: Vec2, threshold: f32) -> bool {
@@ -49,7 +52,8 @@ pub fn apply_forces(
     let dt = time.timestep().as_secs_f32();
 
     for (mut kcc, mut vel, terminal_vel, friction, acc, net_dir) in physics_qry.iter_mut() {
-        vel.linvel += acc.0 * net_dir.0 * dt;
+        vel.linvel.x += acc.x * net_dir.x as f32 * dt;
+        vel.linvel.y += acc.y * net_dir.y as f32 * dt;
 
         let dir = vel.linvel.normalize_or_zero();
         if dir.x > 0. {
@@ -57,8 +61,8 @@ pub fn apply_forces(
         } else if dir.x < 0. {
             vel.linvel.x = f32::min(vel.linvel.x + friction.coefficient, 0.);
         }
-        vel.linvel.x = vel.linvel.x.clamp(-terminal_vel.0.x, terminal_vel.0.x);
-        vel.linvel.y = vel.linvel.y.clamp(-terminal_vel.0.y, terminal_vel.0.y);
+        vel.linvel.x = vel.linvel.x.clamp(-terminal_vel.x, terminal_vel.x);
+        vel.linvel.y = vel.linvel.y.clamp(-terminal_vel.y, terminal_vel.y);
 
         let mut pos = Vec2::ZERO;
         pos += vel.linvel * dt;
