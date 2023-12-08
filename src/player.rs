@@ -60,9 +60,9 @@ fn spawn_player(
             },
             texture_atlas: tex_atlases.add(TextureAtlas::from_grid(
                 asset_server.load("player.png"),
-                Vec2::splat(32.),
+                Vec2::splat(64.),
                 5,
-                2,
+                4,
                 None,
                 None,
             )),
@@ -77,7 +77,7 @@ fn spawn_player(
             ..default()
         },
         KinematicCharacterController::default(),
-        Collider::cuboid(6., 21. / 2.),
+        Collider::cuboid(24. / 2., 42. / 2.),
         Friction::coefficient(2.),
         Velocity::zero(),
         TerminalVelocity(Vec2::new(100., 200.)),
@@ -87,25 +87,25 @@ fn spawn_player(
         Flippable::default(),
         AnimationIndices { first: 0, last: 0 },
         AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
-    ))
-    .with_children(|player| {
-        player.spawn((
-            SpriteBundle {
-                transform: Transform::from_xyz(1., 5., 1.),
-                texture: asset_server.load("sclera.png"),
-                ..default()
-            },
-            Flippable::default(),
-        ));
-        player.spawn((
-            SpriteBundle {
-                transform: Transform::from_xyz(1., 5., 1.),
-                texture: asset_server.load("iris.png"),
-                ..default()
-            },
-            Flippable::default(),
-        ));
-    });
+    ));
+    // .with_children(|player| {
+    //     player.spawn((
+    //         SpriteBundle {
+    //             transform: Transform::from_xyz(1., 5., 1.),
+    //             texture: asset_server.load("sclera.png"),
+    //             ..default()
+    //         },
+    //         Flippable::default(),
+    //     ));
+    //     player.spawn((
+    //         SpriteBundle {
+    //             transform: Transform::from_xyz(1., 5., 1.),
+    //             texture: asset_server.load("iris.png"),
+    //             ..default()
+    //         },
+    //         Flippable::default(),
+    //     ));
+    // });
 }
 
 fn update_animation_state(
@@ -115,7 +115,7 @@ fn update_animation_state(
 
     // tmp
     let jumping = AnimationIndices { first: 5, last: 5 };
-    let walking = AnimationIndices { first: 6, last: 9 };
+    let walking = AnimationIndices { first: 6, last: 19 };
     let idle = AnimationIndices { first: 0, last: 0 };
 
     if !player_grounded.0 && *player_animation_indices != jumping {
