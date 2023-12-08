@@ -1,9 +1,9 @@
 use {
     super::{
+        animation::{self, AnimationIndices, AnimationTimer},
         game_state::GameState,
         physics::{self, Acceleration, Grounded, NetDirection, TerminalVelocity},
         sprite_flip::Flippable,
-        animation::{AnimationIndices, AnimationTimer},
     },
     bevy::prelude::*,
     bevy_rapier2d::prelude::*,
@@ -17,7 +17,11 @@ impl Plugin for PlayerPlugin {
         app.add_systems(OnEnter(GameState::Playing), spawn_player)
             .add_systems(
                 Update,
-                discrete_player_input.run_if(in_state(GameState::Playing)),
+                (
+                    discrete_player_input,
+                    update_animation_state.before(animation::adjust_sprite_indices),
+                )
+                    .run_if(in_state(GameState::Playing)),
             )
             .add_systems(
                 FixedUpdate,
@@ -104,6 +108,26 @@ fn spawn_player(
     });
 }
 
+fn update_animation_state(
+    mut player_qry: Query<(&mut AnimationIndices, &Grounded, &NetDirection), With<Player>>,
+) {
+    let (mut player_animation_indices, player_grounded, player_net_dir) = player_qry.single_mut();
+
+    // tmp
+    let jumping = AnimationIndices { first: 5, last: 5 };
+    let walking = AnimationIndices { first: 6, last: 9 };
+    let idle = AnimationIndices { first: 0, last: 0 };
+
+    if !player_grounded.0 && *player_animation_indices != jumping {
+        *player_animation_indices = jumping;
+    } else if player_grounded.0 && (player_net_dir.0.x < 0. || player_net_dir.0.x > 0.) && *player_animation_indices != walking {
+        *player_animation_indices = walking;
+    } else if player_grounded.0 && player_net_dir.0.x == 0. && *player_animation_indices != idle {
+        *player_animation_indices = idle;
+    }
+    
+}
+
 fn discrete_player_input(
     mut player_qry: Query<(&mut Player, &ActionState<PlayerAction>, &Grounded)>,
 ) {
@@ -122,7 +146,6 @@ pub fn player_movement(
         &mut NetDirection,
         &mut Grounded,
         &mut Flippable,
-        &mut AnimationIndices,
     )>,
 ) {
     let (
@@ -132,7 +155,6 @@ pub fn player_movement(
         mut player_net_dir,
         mut player_grounded,
         mut player_flippable,
-        mut player_animation_indices,
     ) = player_qry.single_mut();
 
     if player_actions.released(PlayerAction::MoveLeft)
@@ -143,22 +165,14 @@ pub fn player_movement(
     if player_actions.pressed(PlayerAction::MoveLeft) {
         player_net_dir.0.x = -1.;
         player_flippable.flip_x = true;
-        *player_animation_indices = AnimationIndices { first: 6, last: 9 };
     }
     if player_actions.pressed(PlayerAction::MoveRight) {
         player_net_dir.0.x = 1.;
         player_flippable.flip_x = false;
-        *player_animation_indices = AnimationIndices { first: 6, last: 9 };
     }
     if player.can_jump {
         player.can_jump = false;
         player_grounded.0 = false;
         player_vel.linvel.y = 200.;
-    }
-    if !player_grounded.0 {
-        *player_animation_indices = AnimationIndices { first: 5, last: 5 };
-    }
-    if player_vel.linvel.x == 0. && player_grounded.0 { // change to avoid equality cmp by 0. 
-        *player_animation_indices = AnimationIndices { first: 0, last: 0 };
     }
 }
