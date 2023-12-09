@@ -1,6 +1,7 @@
 mod animation;
 mod game_state;
 mod main_camera;
+mod mouse_position;
 mod physics;
 mod player;
 mod sprite_flip;
@@ -17,6 +18,7 @@ use {
     game_state::GameState,
     leafwing_input_manager::prelude::*,
     main_camera::MainCameraPlugin,
+    mouse_position::MousePositionPlugin,
     physics::PhysicsPlugin,
     player::{PlayerAction, PlayerPlugin},
     sprite_flip::SpriteFlipPlugin,
@@ -49,6 +51,7 @@ fn main() {
             PhysicsPlugin,
             SpriteFlipPlugin,
             AnimationPlugin,
+            MousePositionPlugin,
         ))
         .run();
 }

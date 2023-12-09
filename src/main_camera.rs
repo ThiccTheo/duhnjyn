@@ -10,7 +10,8 @@ pub struct MainCameraPlugin;
 
 impl Plugin for MainCameraPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::Playing), spawn_main_camera)
+        app.insert_resource(ClearColor(Color::hex("3E8EDE").unwrap()))
+            .add_systems(Startup, spawn_main_camera)
             .add_systems(
                 FixedUpdate,
                 follow_player
@@ -25,7 +26,7 @@ pub struct MainCamera;
 
 fn spawn_main_camera(mut cmds: Commands) {
     let mut cam = Camera2dBundle::default();
-    cam.projection.scale /= 3.;
+    cam.projection.scale /= 5.;
     cmds.spawn((MainCamera, cam));
 }
 

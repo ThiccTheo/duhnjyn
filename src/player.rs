@@ -2,6 +2,7 @@ use {
     super::{
         animation::{self, AnimationIndices, AnimationTimer},
         game_state::GameState,
+        mouse_position::MousePosition,
         physics::{self, Acceleration, Grounded, NetDirection, TerminalVelocity},
         sprite_flip::Flippable,
     },
@@ -38,6 +39,7 @@ pub enum PlayerAction {
     MoveLeft,
     MoveRight,
     Jump,
+    Attack,
 }
 
 #[derive(Component, Default)]
@@ -60,12 +62,13 @@ fn spawn_player(
             },
             texture_atlas: tex_atlases.add(TextureAtlas::from_grid(
                 asset_server.load("player.png"),
-                Vec2::splat(64.),
+                Vec2::splat(32.),
                 5,
                 4,
                 None,
                 None,
             )),
+            transform: Transform::from_xyz(0., 0., 1.),
             ..default()
         },
         InputManagerBundle::<PlayerAction> {
@@ -73,14 +76,16 @@ fn spawn_player(
                 (KeyCode::A, PlayerAction::MoveLeft),
                 (KeyCode::D, PlayerAction::MoveRight),
                 (KeyCode::Space, PlayerAction::Jump),
-            ]),
+            ])
+            .insert(MouseButton::Left, PlayerAction::Attack)
+            .clone(),
             ..default()
         },
         KinematicCharacterController::default(),
-        Collider::cuboid(24. / 2., 42. / 2.),
-        Friction::coefficient(2.),
+        Collider::capsule(Vec2::new(0., 4.), Vec2::new(0., -5.), 6.),
+        Friction::coefficient(3.),
         Velocity::zero(),
-        TerminalVelocity(Vec2::new(100., 200.)),
+        TerminalVelocity(Vec2::new(50., 200.)),
         Acceleration(Vec2::new(300., 500.)),
         NetDirection { x: 0, y: -1 },
         Grounded::default(),
@@ -88,44 +93,51 @@ fn spawn_player(
         AnimationIndices { first: 0, last: 0 },
         AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
     ));
-    // .with_children(|player| {
-    //     player.spawn((
-    //         SpriteBundle {
-    //             transform: Transform::from_xyz(1., 5., 1.),
-    //             texture: asset_server.load("sclera.png"),
-    //             ..default()
-    //         },
-    //         Flippable::default(),
-    //     ));
-    //     player.spawn((
-    //         SpriteBundle {
-    //             transform: Transform::from_xyz(1., 5., 1.),
-    //             texture: asset_server.load("iris.png"),
-    //             ..default()
-    //         },
-    //         Flippable::default(),
-    //     ));
-    // });
 }
 
 fn update_animation_state(
-    mut player_qry: Query<(&mut AnimationIndices, &Grounded, &NetDirection), With<Player>>,
+    mut player_qry: Query<
+        (
+            &mut AnimationIndices,
+            &TextureAtlasSprite,
+            &Grounded,
+            &NetDirection,
+            &ActionState<PlayerAction>,
+        ),
+        With<Player>,
+    >,
 ) {
-    let (mut player_animation_indices, player_grounded, player_net_dir) = player_qry.single_mut();
+    let (
+        mut player_animation_indices,
+        player_tex_atlas_sprite,
+        player_grounded,
+        player_net_dir,
+        player_actions,
+    ) = player_qry.single_mut();
 
-    // tmp
     let jumping = AnimationIndices { first: 5, last: 5 };
     let walking = AnimationIndices { first: 6, last: 19 };
-    let idle = AnimationIndices { first: 0, last: 0 };
+    let idling = AnimationIndices { first: 0, last: 0 };
+    let attacking = AnimationIndices { first: 1, last: 4 };
 
-    if !player_grounded.0 && *player_animation_indices != jumping {
-        *player_animation_indices = jumping;
-    } else if player_grounded.0 && (player_net_dir.x == -1 || player_net_dir.x == 1) && *player_animation_indices != walking {
-        *player_animation_indices = walking;
-    } else if player_grounded.0 && player_net_dir.x == 0 && *player_animation_indices != idle {
-        *player_animation_indices = idle;
+    let attack_in_progress = *player_animation_indices == attacking
+        && player_animation_indices.last != player_tex_atlas_sprite.index;
+
+    if player_actions.pressed(PlayerAction::Attack) {
+        if *player_animation_indices != attacking {
+            *player_animation_indices = attacking;
+        }
+    } else if !player_grounded.0 {
+        if *player_animation_indices != jumping && !attack_in_progress {
+            *player_animation_indices = jumping;
+        }
+    } else if player_net_dir.x != 0 {
+        if *player_animation_indices != walking && !attack_in_progress {
+            *player_animation_indices = walking;
+        }
+    } else if *player_animation_indices != idling && !attack_in_progress {
+        *player_animation_indices = idling;
     }
-    
 }
 
 fn discrete_player_input(
@@ -142,15 +154,18 @@ pub fn player_movement(
     mut player_qry: Query<(
         &mut Player,
         &ActionState<PlayerAction>,
+        &Transform,
         &mut Velocity,
         &mut NetDirection,
         &mut Grounded,
         &mut Flippable,
     )>,
+    mouse_pos: Res<MousePosition>,
 ) {
     let (
         mut player,
         player_actions,
+        player_xform,
         mut player_vel,
         mut player_net_dir,
         mut player_grounded,
@@ -169,6 +184,9 @@ pub fn player_movement(
     if player_actions.pressed(PlayerAction::MoveRight) {
         player_net_dir.x = 1;
         player_flippable.flip_x = false;
+    }
+    if player_actions.pressed(PlayerAction::Attack) {
+        player_flippable.flip_x = player_xform.translation.truncate().x > mouse_pos.x;
     }
     if player.can_jump {
         player.can_jump = false;
