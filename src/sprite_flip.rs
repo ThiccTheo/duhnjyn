@@ -17,12 +17,6 @@ pub struct Flippable {
     pub flip_y: bool,
 }
 
-impl Flippable {
-    pub fn new(flip_x: bool, flip_y: bool) -> Self {
-        Self { flip_x, flip_y }
-    }
-}
-
 fn propagate_sprite_flips(
     parent_qry: Query<(Entity, &Children), With<Flippable>>,
     mut children_qry: Query<&mut Transform, (With<Parent>, With<Flippable>)>,

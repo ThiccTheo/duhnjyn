@@ -10,6 +10,7 @@ mod tile;
 use {
     animation::AnimationPlugin,
     bevy::{
+        // diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
         prelude::*,
         window::{PresentMode, WindowMode, WindowResolution},
     },
@@ -35,12 +36,15 @@ fn main() {
                     primary_window: Some(Window {
                         present_mode: PresentMode::AutoNoVsync,
                         mode: WindowMode::Windowed,
-                        resolution: WindowResolution::new(800., 600.),
+                        resolution: WindowResolution::new(1280., 720.),
+                        position: WindowPosition::Centered(MonitorSelection::Primary),
                         title: String::from("Duhnjyn"),
                         ..default()
                     }),
                     ..default()
                 }),
+            // LogDiagnosticsPlugin::default(),
+            // FrameTimeDiagnosticsPlugin::default(),
             WorldInspectorPlugin::new(),
             RapierPhysicsPlugin::<NoUserData>::default(),
             RapierDebugRenderPlugin::default(),

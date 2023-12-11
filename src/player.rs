@@ -68,7 +68,7 @@ fn spawn_player(
                 None,
                 None,
             )),
-            transform: Transform::from_xyz(0., 0., 1.),
+            transform: Transform::from_xyz(0., 0., 2.),
             ..default()
         },
         InputManagerBundle::<PlayerAction> {
@@ -82,7 +82,7 @@ fn spawn_player(
             ..default()
         },
         KinematicCharacterController::default(),
-        Collider::capsule(Vec2::new(0., 4.), Vec2::new(0., -5.), 6.),
+        Collider::capsule_y(4.5, 6.),
         Friction::coefficient(3.),
         Velocity::zero(),
         TerminalVelocity(Vec2::new(50., 200.)),
