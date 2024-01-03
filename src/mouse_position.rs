@@ -1,5 +1,5 @@
 use {
-    super::main_camera::MainCamera,
+    super::player::PlayerCamera,
     bevy::{prelude::*, window::PrimaryWindow},
 };
 
@@ -18,7 +18,7 @@ pub struct MousePosition(pub Vec2);
 fn update_mouse_position(
     mut old_mouse_pos: ResMut<MousePosition>,
     primary_win_qry: Query<&Window, With<PrimaryWindow>>,
-    main_cam_qry: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+    main_cam_qry: Query<(&Camera, &GlobalTransform), With<PlayerCamera>>,
 ) {
     let primary_win = primary_win_qry.single();
     let (main_cam, main_cam_glob_xform) = main_cam_qry.single();

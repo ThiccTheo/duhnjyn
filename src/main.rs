@@ -6,6 +6,7 @@ mod physics;
 mod player;
 mod sprite_flip;
 mod tile;
+mod weapon;
 
 use {
     animation::AnimationPlugin,
@@ -18,12 +19,13 @@ use {
     bevy_rapier2d::prelude::*,
     game_state::GameState,
     leafwing_input_manager::prelude::*,
-    main_camera::MainCameraPlugin,
+    // main_camera::MainCameraPlugin,
     mouse_position::MousePositionPlugin,
     physics::PhysicsPlugin,
     player::{PlayerAction, PlayerPlugin},
     sprite_flip::SpriteFlipPlugin,
     tile::TilePlugin,
+    weapon::WeaponPlugin,
 };
 
 fn main() {
@@ -49,13 +51,14 @@ fn main() {
             RapierPhysicsPlugin::<NoUserData>::default(),
             RapierDebugRenderPlugin::default(),
             InputManagerPlugin::<PlayerAction>::default(),
-            MainCameraPlugin,
+            // MainCameraPlugin,
             PlayerPlugin,
             TilePlugin,
             PhysicsPlugin,
             SpriteFlipPlugin,
             AnimationPlugin,
             MousePositionPlugin,
+            WeaponPlugin,
         ))
         .run();
 }

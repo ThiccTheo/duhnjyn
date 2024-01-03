@@ -5,8 +5,9 @@ use {
         mouse_position::MousePosition,
         physics::{self, Acceleration, Grounded, NetDirection, TerminalVelocity},
         sprite_flip::Flippable,
+        weapon::Weapon,
     },
-    bevy::prelude::*,
+    bevy::{prelude::*, sprite::Anchor},
     bevy_rapier2d::prelude::*,
     leafwing_input_manager::prelude::*,
 };
@@ -46,6 +47,9 @@ pub enum PlayerAction {
 pub struct Player {
     can_jump: bool,
 }
+
+#[derive(Component)]
+pub struct PlayerCamera;
 
 fn spawn_player(
     mut cmds: Commands,
@@ -92,7 +96,26 @@ fn spawn_player(
         Flippable::default(),
         AnimationIndices { first: 0, last: 0 },
         AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
-    ));
+    ))
+    .with_children(|parent| {
+        let mut player_cam = Camera2dBundle::default();
+        player_cam.projection.scale /= 3.;
+        parent.spawn((PlayerCamera, player_cam));
+
+        parent.spawn((
+            SpriteBundle {
+                sprite: Sprite {
+                    anchor: Anchor::BottomRight,
+                    ..default()
+                },
+                transform: Transform::from_xyz(0., 0., 10.),
+                texture: asset_server.load("sword.png"),
+                ..default()
+            },
+            Flippable::default(),
+            Weapon,
+        ));
+    });
 }
 
 fn update_animation_state(
