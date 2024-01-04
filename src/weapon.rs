@@ -4,7 +4,7 @@ pub struct WeaponPlugin;
 
 impl Plugin for WeaponPlugin {
     fn build(&self, app: &mut App) {
-        //app.add_systems(Update, swing_weapons.run_if(in_state(GameState::Playing)));
+        app.add_systems(Update, swing_weapons.run_if(in_state(GameState::Playing)));
     }
 }
 

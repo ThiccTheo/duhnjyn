@@ -105,7 +105,7 @@ fn spawn_player(
         parent.spawn((
             SpriteBundle {
                 sprite: Sprite {
-                    anchor: Anchor::BottomRight,
+                    anchor: Anchor::BottomLeft,
                     ..default()
                 },
                 transform: Transform::from_xyz(0., 0., 10.),
@@ -114,6 +114,7 @@ fn spawn_player(
             },
             Flippable::default(),
             Weapon,
+            Name::new("Sword"),
         ));
     });
 }
