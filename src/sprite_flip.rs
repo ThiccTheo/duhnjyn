@@ -50,27 +50,45 @@ fn convert_flippables_to_sprite_flips(
     mut tex_atlas_sprite_qry: Query<(&mut TextureAtlasSprite, &Flippable)>,
 ) {
     for (mut sprite, flippable) in sprite_qry.iter_mut() {
-        let Vec2 { x: anchor_x, y: anchor_y } = sprite.anchor.as_vec();
+        let Vec2 {
+            x: anchor_x,
+            y: anchor_y,
+        } = sprite.anchor.as_vec();
 
         if sprite.flip_x != flippable.flip_x {
             sprite.flip_x = flippable.flip_x;
-            sprite.anchor = Anchor::Custom(Vec2 { x: -anchor_x, y: anchor_y });
+            sprite.anchor = Anchor::Custom(Vec2 {
+                x: -anchor_x,
+                y: anchor_y,
+            });
         }
         if sprite.flip_y != flippable.flip_y {
             sprite.flip_y = flippable.flip_y;
-            sprite.anchor = Anchor::Custom(Vec2 { x: anchor_x, y: -anchor_y });
+            sprite.anchor = Anchor::Custom(Vec2 {
+                x: anchor_x,
+                y: -anchor_y,
+            });
         }
     }
     for (mut sprite, flippable) in tex_atlas_sprite_qry.iter_mut() {
-        let Vec2 { x: anchor_x, y: anchor_y } = sprite.anchor.as_vec();
+        let Vec2 {
+            x: anchor_x,
+            y: anchor_y,
+        } = sprite.anchor.as_vec();
 
         if sprite.flip_x != flippable.flip_x {
             sprite.flip_x = flippable.flip_x;
-            sprite.anchor = Anchor::Custom(Vec2 { x: -anchor_x, y: anchor_y });
+            sprite.anchor = Anchor::Custom(Vec2 {
+                x: -anchor_x,
+                y: anchor_y,
+            });
         }
         if sprite.flip_y != flippable.flip_y {
             sprite.flip_y = flippable.flip_y;
-            sprite.anchor = Anchor::Custom(Vec2 { x: anchor_x, y: -anchor_y });
+            sprite.anchor = Anchor::Custom(Vec2 {
+                x: anchor_x,
+                y: -anchor_y,
+            });
         }
     }
 }

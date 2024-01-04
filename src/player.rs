@@ -108,7 +108,7 @@ fn spawn_player(
                     anchor: Anchor::BottomLeft,
                     ..default()
                 },
-                transform: Transform::from_xyz(0., 0., 10.),
+                transform: Transform::from_xyz(0., 5., -1.),
                 texture: asset_server.load("sword.png"),
                 ..default()
             },
