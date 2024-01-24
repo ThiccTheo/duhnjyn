@@ -4,7 +4,7 @@ pub struct WeaponPlugin;
 
 impl Plugin for WeaponPlugin {
     fn build(&self, app: &mut App) {
-        // app.add_systems(Update, swing_weapons.run_if(in_state(GameState::Playing)));
+        app.add_systems(Update, swing_weapons.run_if(in_state(GameState::Playing)));
     }
 }
 
@@ -18,9 +18,6 @@ fn swing_weapons(time: Res<Time>, mut weapon_qry: Query<&mut Transform, With<Wea
         let rotation_dir =
             -(weapon_xform.translation.x.signum() * weapon_xform.translation.y.signum());
         //weapon_xform.rotation.z = weapon_xform.rotation.z.clamp(PI / 8., 2. * PI) * rotation_dir;
-        weapon_xform.rotate_around(
-            Vec3::new(3., 3., 0.),
-            Quat::from_rotation_z(1. * rotation_dir * dt),
-        );
+        weapon_xform.rotate_around(Vec3::new(-6., 6., 0.), Quat::from_rotation_z(5. * dt));
     }
 }

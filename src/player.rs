@@ -105,7 +105,7 @@ fn spawn_player(
         parent.spawn((
             SpriteBundle {
                 sprite: Sprite {
-                    anchor: Anchor::BottomLeft,
+                    anchor: Anchor::BottomCenter,
                     ..default()
                 },
                 transform: Transform::from_xyz(0., 5., -1.),
@@ -210,7 +210,7 @@ pub fn player_movement(
         player_flippable.flip_x = false;
     }
     if player_actions.pressed(PlayerAction::Attack) {
-        player_flippable.flip_x = player_xform.translation.truncate().x > mouse_pos.x;
+        player_flippable.flip_x = player_xform.translation.x > mouse_pos.x;
     }
     if player.can_jump {
         player.can_jump = false;

@@ -15,6 +15,7 @@ use {
         prelude::*,
         window::{PresentMode, WindowMode, WindowResolution},
     },
+    bevy_ecs_tilemap::prelude::*,
     bevy_inspector_egui::quick::WorldInspectorPlugin,
     bevy_rapier2d::prelude::*,
     game_state::GameState,
@@ -51,6 +52,7 @@ fn main() {
             RapierPhysicsPlugin::<NoUserData>::default(),
             RapierDebugRenderPlugin::default(),
             InputManagerPlugin::<PlayerAction>::default(),
+            TilemapPlugin,
             // MainCameraPlugin,
             PlayerPlugin,
             TilePlugin,
@@ -58,7 +60,7 @@ fn main() {
             SpriteFlipPlugin,
             AnimationPlugin,
             MousePositionPlugin,
-            WeaponPlugin,
+            // WeaponPlugin,
         ))
         .run();
 }
